@@ -1,21 +1,21 @@
 {
   "project_info": {
-    "project_number": "877039610968",
-    "project_id": "library-2e192",
-    "storage_bucket": "library-2e192.appspot.com"
+    "project_number": "478557247119",
+    "project_id": "library-d610a",
+    "storage_bucket": "library-d610a.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:877039610968:android:8cc15be67166121c922e2d",
+        "mobilesdk_app_id": "1:478557247119:android:e03a40745b5ef83d1502fa",
         "android_client_info": {
-          "package_name": "--json --project=library-2e192"
+          "package_name": "com.example.library_1"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDzz65rwCOQs8P0Ur2hopeWGFPesufEhD0"
+          "current_key": "AIzaSyA5gbvOejAIf0y1KsMQcSkFmE34IRHbqh8"
         }
       ],
       "services": {
