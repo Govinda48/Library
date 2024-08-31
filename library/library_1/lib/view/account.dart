@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_types_as_parameter_names
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -112,8 +114,10 @@ class CategoryWiseBookCountPage extends StatelessWidget {
 
     return categoryCounts.entries.map((entry) {
       final index = categoryCounts.keys.toList().indexOf(entry.key);
+      // ignore: prefer_const_declarations
       final isTouched = false; // You can add touch interaction if needed
       final double radius =
+          // ignore: dead_code
           isTouched ? 120 : 100; // Default radius for pie sections
 
       return PieChartSectionData(

@@ -1,3 +1,5 @@
+// ignore_for_file: library_private_types_in_public_api, avoid_print
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:library_1/screen/otpvarification.dart';
@@ -40,7 +42,7 @@ class _PhoneNumberScreenState extends State<PhoneNumberScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Enter Mobile Number'),
+        title: const Text('Enter Mobile Number'),
       ),
       body: Center(
         child: Padding(
@@ -51,15 +53,15 @@ class _PhoneNumberScreenState extends State<PhoneNumberScreen> {
               TextField(
                 controller: _phoneController,
                 keyboardType: TextInputType.phone,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Phone Number',
                   border: OutlineInputBorder(),
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _sendOTP,
-                child: Text('Send OTP'),
+                child: const Text('Send OTP'),
               ),
             ],
           ),

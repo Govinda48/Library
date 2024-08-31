@@ -1,10 +1,15 @@
+// ignore_for_file: avoid_print
+
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:chewie/chewie.dart';
 import 'package:library_1/screen/signin.dart';
 
 class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
   @override
+  // ignore: library_private_types_in_public_api
   _LoginScreenState createState() => _LoginScreenState();
 }
 
@@ -164,7 +169,8 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
                                       Navigator.pushReplacement(
                                         context,
                                         MaterialPageRoute(
-                                          builder: (context) => SignInPage(),
+                                          builder: (context) =>
+                                              const SignInPage(),
                                         ),
                                       );
                                     },

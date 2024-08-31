@@ -1,10 +1,13 @@
+// ignore_for_file: library_private_types_in_public_api
+
 import 'package:flutter/material.dart';
 import 'package:library_1/screen/loginscree.dart';
-import 'package:library_1/screen/spash.dart';
 import 'package:video_player/video_player.dart';
 import 'package:chewie/chewie.dart';
 
 class SignInPage extends StatefulWidget {
+  const SignInPage({super.key});
+
   @override
   _SignInPageState createState() => _SignInPageState();
 }
@@ -62,7 +65,7 @@ class _SignInPageState extends State<SignInPage> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: <Widget>[
-                        TextField(
+                        const TextField(
                           decoration: InputDecoration(
                             border: OutlineInputBorder(
                               borderSide: BorderSide(color: Colors.black),
@@ -75,7 +78,7 @@ class _SignInPageState extends State<SignInPage> {
                           style: TextStyle(color: Colors.white),
                         ),
                         const SizedBox(height: 16.0),
-                        TextField(
+                        const TextField(
                           obscureText: true,
                           decoration: InputDecoration(
                             border: OutlineInputBorder(
@@ -96,7 +99,7 @@ class _SignInPageState extends State<SignInPage> {
                               backgroundColor: Colors.red,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
-                                side: BorderSide(
+                                side: const BorderSide(
                                     color: Colors.black), // Black border
                               ),
                               padding:
@@ -132,7 +135,7 @@ class _SignInPageState extends State<SignInPage> {
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) =>
-                                        LoginScreen(), // Replace with your SignUpPage
+                                        const LoginScreen(), // Replace with your SignUpPage
                                   ),
                                 );
                               },

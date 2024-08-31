@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously, avoid_print, library_private_types_in_public_api
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
@@ -205,6 +207,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   .collection('books')
                   .where('bookName', isGreaterThanOrEqualTo: _searchQuery)
                   .where('bookName',
+                      // ignore: prefer_interpolation_to_compose_strings
                       isLessThanOrEqualTo: _searchQuery + '\uf8ff')
                   .orderBy('bookName')
                   .snapshots(),

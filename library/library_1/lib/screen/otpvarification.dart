@@ -1,10 +1,12 @@
+// ignore_for_file: library_private_types_in_public_api, use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class OTPScreen extends StatefulWidget {
   final String verificationId;
 
-  OTPScreen({required this.verificationId});
+  const OTPScreen({super.key, required this.verificationId});
 
   @override
   _OTPScreenState createState() => _OTPScreenState();
@@ -24,12 +26,12 @@ class _OTPScreenState extends State<OTPScreen> {
     try {
       await _auth.signInWithCredential(credential);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Phone number verified!')),
+        const SnackBar(content: Text('Phone number verified!')),
       );
       // Navigate to the next screen after successful verification
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Invalid OTP!')),
+        const SnackBar(content: Text('Invalid OTP!')),
       );
     }
   }
@@ -38,7 +40,7 @@ class _OTPScreenState extends State<OTPScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Enter OTP'),
+        title: const Text('Enter OTP'),
       ),
       body: Center(
         child: Padding(
@@ -49,15 +51,15 @@ class _OTPScreenState extends State<OTPScreen> {
               TextField(
                 controller: _otpController,
                 keyboardType: TextInputType.number,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'OTP',
                   border: OutlineInputBorder(),
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _verifyOTP,
-                child: Text('Verify OTP'),
+                child: const Text('Verify OTP'),
               ),
             ],
           ),
