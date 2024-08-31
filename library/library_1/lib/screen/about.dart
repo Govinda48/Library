@@ -109,13 +109,13 @@ class AboutUsScreen extends StatelessWidget {
               ],
             ),
             // Grey Container Below the Image
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Container(
+            const Padding(
+              padding: EdgeInsets.all(8.0),
+              child: SizedBox(
                 // color: Colors.grey,
                 width: double.infinity,
                 height: 3000,
-                child: const Center(
+                child: Center(
                     child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -138,6 +138,7 @@ class AboutUsScreen extends StatelessWidget {
   }
 
   // Helper method to build category items with their descriptions
+  // ignore: unused_element
   Widget _buildCategoryItem(String title, String description) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
