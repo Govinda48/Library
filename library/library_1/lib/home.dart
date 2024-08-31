@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+import 'package:library_1/screen/about.dart';
+import 'package:library_1/view/account.dart';
 import 'package:library_1/view/addbook.dart';
 import 'package:library_1/view/category.dart';
+import 'package:library_1/view/favorite.dart';
 import 'package:library_1/view/search.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  // ignore: library_private_types_in_public_api
   _HomeScreenState createState() => _HomeScreenState();
 }
 
@@ -18,8 +21,8 @@ class _HomeScreenState extends State<HomeScreen>
     const CategoryPage(),
     const SearchScreen(),
     const AddBooksPage(),
-    const LikePage(),
-    const AccountPage(),
+    const FavoriteScreen(),
+    const CategoryWiseBookCountPage(),
   ];
 
   late PageController _pageController;
@@ -53,7 +56,10 @@ class _HomeScreenState extends State<HomeScreen>
         // Handle language selection here
         break;
       case 'About Us':
-        // Show About Us page or dialog
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const AboutUsScreen()),
+        );
         break;
       case 'More':
         // Handle more actions
@@ -65,77 +71,52 @@ class _HomeScreenState extends State<HomeScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          "Library",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 28,
-            fontWeight: FontWeight.w700,
+        title: const AnimationConfiguration.staggeredList(
+          position: 0,
+          duration: Duration(seconds: 1),
+          child: SlideAnimation(
+            horizontalOffset: 50.0,
+            child: FadeInAnimation(
+              child: Text(
+                'Library Book',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
           ),
         ),
-        backgroundColor: Colors.blue.shade300,
+        backgroundColor: Colors.deepPurple,
         actions: [
           IconButton(
             icon: const Icon(
-              Icons.notifications,
+              Icons.search,
               color: Colors.white,
             ),
             onPressed: () {
-              // Handle notification button press here
+              // Add search action
             },
           ),
-          PopupMenuButton(
-            color: Colors.white,
-            onSelected: _onMenuSelected,
-            itemBuilder: (BuildContext context) {
-              return [
-                const PopupMenuItem(
-                  value: 'Dark Mode',
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.dark_mode,
-                        color: Colors.black,
-                      ),
-                      SizedBox(width: 8),
-                      Text('Dark Mode'),
-                    ],
-                  ),
+          IconButton(
+            icon: const Icon(
+              Icons.info,
+              color: Colors.white,
+            ),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AboutUsScreen(),
                 ),
-                const PopupMenuItem<String>(
-                  value: 'Language',
-                  child: Row(
-                    children: [
-                      Icon(Icons.language, color: Colors.black),
-                      SizedBox(width: 8),
-                      Text('Language'),
-                    ],
-                  ),
-                ),
-                const PopupMenuItem<String>(
-                  value: 'About Us',
-                  child: Row(
-                    children: [
-                      Icon(Icons.info, color: Colors.black),
-                      SizedBox(width: 8),
-                      Text('About Us'),
-                    ],
-                  ),
-                ),
-                const PopupMenuItem<String>(
-                  value: 'More',
-                  child: Row(
-                    children: [
-                      Icon(Icons.more_horiz, color: Colors.black),
-                      SizedBox(width: 8),
-                      Text('More'),
-                    ],
-                  ),
-                ),
-              ];
+              );
             },
           ),
         ],
+        elevation: 10.0,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
+        ),
       ),
       body: PageView(
         controller: _pageController,
@@ -148,7 +129,7 @@ class _HomeScreenState extends State<HomeScreen>
         type: BottomNavigationBarType.fixed,
         selectedItemColor: Colors.black,
         unselectedItemColor: Colors.white,
-        backgroundColor: Colors.blue.shade300,
+        backgroundColor: Colors.deepPurple.shade300,
         items: [
           BottomNavigationBarItem(
             icon: Icon(Icons.category, size: _currentIndex == 0 ? 30 : 24),
@@ -167,32 +148,11 @@ class _HomeScreenState extends State<HomeScreen>
             label: 'Like',
           ),
           BottomNavigationBarItem(
-            icon:
-                Icon(Icons.account_circle, size: _currentIndex == 4 ? 30 : 24),
-            label: 'Account',
+            icon: Icon(Icons.book_outlined, size: _currentIndex == 4 ? 30 : 24),
+            label: 'Books',
           ),
         ],
       ),
     );
-  }
-}
-
-// Placeholder pages for each tab
-
-class LikePage extends StatelessWidget {
-  const LikePage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: Text('Like Page'));
-  }
-}
-
-class AccountPage extends StatelessWidget {
-  const AccountPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: Text('Account Page'));
   }
 }

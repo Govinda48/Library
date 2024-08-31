@@ -1,5 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
+import 'package:library_1/view/bookindex.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -10,39 +12,27 @@ class SearchScreen extends StatefulWidget {
 
 class _SearchScreenState extends State<SearchScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  String _searchQuery = "";
 
-  void _showBookDetails(BuildContext context, String bookName,
-      String authorName, String bookNo, String imageUrl) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(bookName),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              imageUrl.isNotEmpty
-                  ? Image.network(
-                      imageUrl,
-                      width: 200,
-                      height: 200,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) =>
-                          const Icon(Icons.error, size: 200),
-                    )
-                  : const Icon(Icons.book, size: 200),
-            ],
-          ),
-          actions: [
-            TextButton(
-              child: const Text('Close'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
+  void _showBookDetails(BuildContext context, Map<String, dynamic> book) {
+    final List<String> imageUrls = [
+      if (book['imageUrl'] != null) book['imageUrl'],
+      if (book['index1Url'] != null) book['index1Url'],
+      if (book['index2Url'] != null) book['index2Url'],
+      if (book['index3Url'] != null) book['index3Url'],
+      if (book['index4Url'] != null) book['index4Url'],
+    ];
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => BookDetailsPage(
+          bookName: book['bookName'] ?? 'Unknown Book',
+          authorName: book['authorName'] ?? 'Unknown Author',
+          bookNo: book['bookNo'] ?? 'Unknown Number',
+          imageUrls: imageUrls,
+        ),
+      ),
     );
   }
 
@@ -85,12 +75,34 @@ class _SearchScreenState extends State<SearchScreen> {
             TextButton(
               child: const Text('Update'),
               onPressed: () async {
-                await _firestore.collection('books').doc(document.id).update({
-                  'bookName': bookNameController.text,
-                  'authorName': authorNameController.text,
-                  'bookNo': bookNoController.text,
-                });
-                Navigator.of(context).pop();
+                try {
+                  await _firestore.collection('books').doc(document.id).update({
+                    'bookName': bookNameController.text,
+                    'authorName': authorNameController.text,
+                    'bookNo': bookNoController.text,
+                  });
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      backgroundColor: Colors.transparent,
+                      content: AwesomeSnackbarContent(
+                        title: 'Success',
+                        message: 'Book updated successfully',
+                        contentType: ContentType.success,
+                      ),
+                    ),
+                  );
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: AwesomeSnackbarContent(
+                        title: 'Error',
+                        message: 'Failed to update book',
+                        contentType: ContentType.failure,
+                      ),
+                    ),
+                  );
+                }
               },
             ),
           ],
@@ -100,7 +112,29 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   void _deleteBook(String documentId) async {
-    await _firestore.collection('books').doc(documentId).delete();
+    try {
+      await _firestore.collection('books').doc(documentId).delete();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: Colors.transparent,
+          content: AwesomeSnackbarContent(
+            title: 'Success',
+            message: 'Book deleted successfully',
+            contentType: ContentType.failure,
+          ),
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: AwesomeSnackbarContent(
+            title: 'Error',
+            message: 'Failed to delete book',
+            contentType: ContentType.failure,
+          ),
+        ),
+      );
+    }
   }
 
   void _showContextMenu(BuildContext context, DocumentSnapshot document) {
@@ -134,126 +168,166 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final List<Color> colors = [
+      Colors.red.shade50,
+      Colors.green.shade50,
+      Colors.blue.shade50,
+      Colors.orange.shade50,
+      Colors.purple.shade50,
+      Colors.yellow.shade50,
+      Colors.teal.shade50,
+      Colors.pink.shade50,
+      Colors.cyan.shade50,
+      Colors.lime.shade50,
+    ];
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Books List'),
-      ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: _firestore
-            .collection('books')
-            .orderBy('timestamp', descending: true)
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: TextField(
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(10))),
+                hintText: 'Search for a book',
+                prefixIcon: Icon(Icons.search),
+              ),
+              onChanged: (query) {
+                setState(() {
+                  _searchQuery = query;
+                });
+              },
+            ),
+          ),
+          Expanded(
+            child: StreamBuilder<QuerySnapshot>(
+              stream: _firestore
+                  .collection('books')
+                  .where('bookName', isGreaterThanOrEqualTo: _searchQuery)
+                  .where('bookName',
+                      isLessThanOrEqualTo: _searchQuery + '\uf8ff')
+                  .orderBy('bookName')
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
 
-          if (snapshot.hasError) {
-            print('Firestore error: ${snapshot.error}');
-            return const Center(child: Text('Something went wrong'));
-          }
+                if (snapshot.hasError) {
+                  print('Firestore error: ${snapshot.error}');
+                  return const Center(child: Text('Something went wrong'));
+                }
 
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(child: Text('No books found.'));
-          }
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return const Center(child: Text('No books found.'));
+                }
 
-          final books = snapshot.data!.docs;
+                final books = snapshot.data!.docs;
 
-          return ListView.builder(
-            itemCount: books.length,
-            itemBuilder: (context, index) {
-              final book = books[index].data() as Map<String, dynamic>;
+                return ListView.builder(
+                  itemCount: books.length,
+                  itemBuilder: (context, index) {
+                    final book = books[index].data() as Map<String, dynamic>;
 
-              final bookName = book['bookName'] ?? 'Unknown Book';
-              final authorName = book['authorName'] ?? 'Unknown Author';
-              final bookNo = book['bookNo'] ?? 'Unknown Number';
-              final imageUrl = book['imageUrl'] ?? '';
-              final category = book['category'] ?? 'Unknown Category';
+                    final bookName = book['bookName'] ?? 'Unknown Book';
+                    final authorName = book['authorName'] ?? 'Unknown Author';
+                    final bookNo = book['bookNo'] ?? 'Unknown Number';
+                    final imageUrl = book['imageUrl'] ?? '';
+                    final category = book['category'] ?? 'Unknown Category';
 
-              return GestureDetector(
-                onLongPress: () => _showContextMenu(context, books[index]),
-                onTap: () {
-                  _showBookDetails(
-                      context, bookName, authorName, bookNo, imageUrl);
-                },
-                child: Container(
-                  margin: const EdgeInsets.symmetric(
-                      vertical: 8.0, horizontal: 16.0),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8.0),
-                    border: Border.all(color: Colors.grey.shade300),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Colors.black,
-                        offset: Offset(0, 2),
-                        blurRadius: 1.0,
-                      ),
-                    ],
-                  ),
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: Colors.teal.shade100,
-                      child: Text(
-                        '${index + 1}',
-                        style: const TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    title: Text(
-                      "Name: $bookName",
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Author: $authorName',
-                          style: const TextStyle(
-                            color: Colors.red,
-                            fontSize: 14,
-                          ),
-                        ),
-                        Text(
-                          'Category: $category',
-                          style: const TextStyle(
-                            color: Colors.grey,
-                            fontSize: 14,
-                          ),
-                        ),
-                        Text(
-                          'Book No: $bookNo',
-                          style: const TextStyle(
-                            color: Colors.grey,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                    trailing: imageUrl.isNotEmpty
-                        ? ClipRRect(
-                            borderRadius: BorderRadius.circular(8.0),
-                            child: Image.network(
-                              imageUrl,
-                              width: 50,
-                              height: 50,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  const Icon(Icons.error, size: 50),
+                    return GestureDetector(
+                      onLongPress: () =>
+                          _showContextMenu(context, books[index]),
+                      onTap: () {
+                        _showBookDetails(context, book);
+                      },
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(
+                            vertical: 8.0, horizontal: 16.0),
+                        decoration: BoxDecoration(
+                          color: colors[index %
+                              colors
+                                  .length], // Cyclhange the background color here
+                          borderRadius: BorderRadius.circular(8.0),
+                          border: Border.all(color: Colors.grey.shade300),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Colors.black,
+                              offset: Offset(0, 2),
+                              blurRadius: 1.0,
                             ),
-                          )
-                        : const Icon(Icons.book, size: 50),
-                  ),
-                ),
-              );
-            },
-          );
-        },
+                          ],
+                        ),
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: Colors.teal.shade100,
+                            child: Text(
+                              '${index + 1}',
+                              style: const TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          title: Text(
+                            "Name: $bookName",
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                            ),
+                          ),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Author: $authorName',
+                                style: const TextStyle(
+                                  color: Colors.red,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              Text(
+                                'Category: $category',
+                                style: const TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              Text(
+                                'Book No: $bookNo',
+                                style: const TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                          trailing: imageUrl.isNotEmpty
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(8.0),
+                                  child: Image.network(
+                                    imageUrl,
+                                    width: 60,
+                                    height: 80,
+                                    fit: BoxFit.fill,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      print(
+                                          'Image load error: $error'); // Log the error
+                                      return const Icon(Icons.error,
+                                          size: 50); // Display fallback icon
+                                    },
+                                  ),
+                                )
+                              : const Icon(Icons.book, size: 50),
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

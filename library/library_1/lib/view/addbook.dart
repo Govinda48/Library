@@ -1,8 +1,9 @@
-import 'dart:io'; // Import to use File
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart'; // For Firebase Storage
-import 'package:image_picker/image_picker.dart'; // For image picking
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 
 class AddBooksPage extends StatefulWidget {
   const AddBooksPage({super.key});
@@ -22,134 +23,237 @@ class _AddBooksPageState extends State<AddBooksPage> {
     'Constitution',
     'Jmfc',
     'Student',
+    'Bare Act',
     'Other'
   ];
   final _bookNameController = TextEditingController();
   final _authorNameController = TextEditingController();
-  final _bookNoController = TextEditingController(); // Added for book number
-  File? _selectedImage; // File to store the selected image
-  double? _uploadProgress; // Track upload progress
+  final _bookNoController = TextEditingController();
+  File? _selectedImage;
+  File? _index1Image; // New field for index1 image
+  File? _index2Image; // New field for index2 image
+  File? _index3Image; // New field for index3 image
+  File? _index4Image; // New field for index4 image
+  double? _uploadProgress;
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseStorage _storage =
-      FirebaseStorage.instance; // Firebase Storage instance
+  final FirebaseStorage _storage = FirebaseStorage.instance;
 
-  // Method to save book data to Firestore
   Future<void> _saveBookData() async {
     final bookName = _bookNameController.text;
     final authorName = _authorNameController.text;
-    final bookNo = _bookNoController.text; // Get book number
+    final bookNo = _bookNoController.text;
     final category = _selectedCategory;
 
     if (bookName.isEmpty ||
         authorName.isEmpty ||
-        bookNo.isEmpty || // Ensure book number is not empty
+        bookNo.isEmpty ||
         category == null ||
         _selectedImage == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Please fill in all fields and select an image.')),
-      );
+      _showAwesomeSnackbar(
+          'Error', 'Please fill in all fields and select the main image.');
       return;
     }
 
     try {
-      // Upload image to Firebase Storage
-      String imageUrl = await _uploadImageToStorage(_selectedImage!);
+      final existingBooks = await _firestore
+          .collection('books')
+          .where('bookNo', isEqualTo: bookNo)
+          .get();
 
-      // Save book data along with image URL
+      if (existingBooks.docs.isNotEmpty) {
+        _showAwesomeSnackbar('Error',
+            'A book with this number already exists. Please check the book number.');
+        return;
+      }
+
+      String mainImageUrl = await _uploadImageToStorage(_selectedImage!);
+      String? index1Url;
+      String? index2Url;
+      String? index3Url;
+      String? index4Url;
+
+      // Upload additional images if they are selected
+      if (_index1Image != null) {
+        index1Url = await _uploadImageToStorage(_index1Image!);
+      }
+      if (_index2Image != null) {
+        index2Url = await _uploadImageToStorage(_index2Image!);
+      }
+      if (_index3Image != null) {
+        index3Url = await _uploadImageToStorage(_index3Image!);
+      }
+      if (_index4Image != null) {
+        index4Url = await _uploadImageToStorage(_index4Image!);
+      }
+
       await _firestore.collection('books').add({
         'bookName': bookName,
         'authorName': authorName,
-        'bookNo': bookNo, // Save book number
+        'bookNo': bookNo,
         'category': category,
-        'imageUrl': imageUrl,
+        'imageUrl': mainImageUrl,
+        'index1Url': index1Url, // Store additional image URLs if available
+        'index2Url': index2Url,
+        'index3Url': index3Url,
+        'index4Url': index4Url,
         'timestamp': FieldValue.serverTimestamp(),
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Book added successfully!')),
-      );
+      _showAwesomeSnackbar('Success', 'Book added successfully!');
 
       _bookNameController.clear();
       _authorNameController.clear();
-      _bookNoController.clear(); // Clear book number field
+      _bookNoController.clear();
       setState(() {
         _selectedCategory = null;
         _selectedImage = null;
-        _uploadProgress = null; // Reset progress
+        _index1Image = null;
+        _index2Image = null;
+        _index3Image = null;
+        _index4Image = null;
+        _uploadProgress = null;
       });
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to add book: $e')),
-      );
+      _showAwesomeSnackbar('Error', 'Failed to add book: $e');
     }
   }
 
-  // Method to upload image to Firebase Storage and get the URL with progress indication
   Future<String> _uploadImageToStorage(File image) async {
     try {
       final fileName = DateTime.now().millisecondsSinceEpoch.toString();
       final ref = _storage.ref().child('book_images/$fileName');
 
-      // Use putFile with a callback to track progress
       UploadTask uploadTask = ref.putFile(image);
 
-      // Show a progress indicator while uploading
       uploadTask.snapshotEvents.listen((TaskSnapshot snapshot) {
         final progress = snapshot.bytesTransferred / snapshot.totalBytes;
         setState(() {
-          _uploadProgress = progress; // Update the progress
+          _uploadProgress = progress;
         });
       });
 
-      await uploadTask; // Await the completion of the upload
+      await uploadTask;
       return await ref.getDownloadURL();
     } catch (e) {
       throw Exception('Failed to upload image: $e');
     }
   }
 
-  // Method to pick an image from gallery or camera
-  Future<void> _pickImage(ImageSource source) async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: source);
+  Future<void> _pickImage(
+      ImageSource source, ValueChanged<File?> onImagePicked) async {
+    try {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(source: source);
 
-    if (pickedFile != null) {
-      setState(() {
-        _selectedImage = File(pickedFile.path);
-      });
+      if (pickedFile != null) {
+        onImagePicked(File(pickedFile.path));
+      } else {
+        _showAwesomeSnackbar('Error', 'No image selected.');
+      }
+    } catch (e) {
+      _showAwesomeSnackbar('Error', 'Failed to pick image: $e');
     }
   }
 
-  // Update book number when category changes
   void _updateBookNo() {
     if (_selectedCategory != null) {
       final prefix = _selectedCategory!.substring(0, 2).toUpperCase();
       final currentText = _bookNoController.text;
-      // If bookNo is empty or doesn't start with prefix, initialize or update it
       if (currentText.isEmpty || !currentText.startsWith(prefix)) {
         _bookNoController.text = '$prefix-';
       } else {
-        // Update book number with new prefix if it changes
         _bookNoController.text =
             currentText.replaceFirst(RegExp(r'^[A-Z]{2}-'), '$prefix-');
       }
-      // Move cursor to the end of the text field
       _bookNoController.selection = TextSelection.fromPosition(
         TextPosition(offset: _bookNoController.text.length),
       );
     }
   }
 
+  Widget _buildImagePicker(
+      String label, File? image, Function(File?) onImagePicked) {
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: () => _pickImage(ImageSource.gallery, onImagePicked),
+                icon: const Icon(Icons.photo_library),
+                label: const Text('Gallery'),
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.deepPurple.shade300,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                ),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: () => _pickImage(ImageSource.camera, onImagePicked),
+                icon: const Icon(Icons.camera_alt),
+                label: const Text('Camera'),
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.deepPurple.shade300,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        image != null
+            ? Image.file(
+                image,
+                height: 150,
+              )
+            : const Text('No image selected.'),
+      ],
+    );
+  }
+
+  void _showAwesomeSnackbar(String title, String message) {
+    final snackBar = SnackBar(
+      content: AwesomeSnackbarContent(
+        title: title,
+        message: message,
+        contentType:
+            title == 'Success' ? ContentType.success : ContentType.failure,
+      ),
+      behavior: SnackBarBehavior.floating,
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+    );
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add Book'),
+        title: const Text(
+          'Add Books',
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 28,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        backgroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
-        // Wrap the content in SingleChildScrollView
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -160,6 +264,7 @@ class _AddBooksPageState extends State<AddBooksPage> {
                 labelText: 'Book Name',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: Colors.black),
                 ),
                 contentPadding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -172,6 +277,7 @@ class _AddBooksPageState extends State<AddBooksPage> {
                 labelText: 'Author Name',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: Colors.black),
                 ),
                 contentPadding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -180,86 +286,79 @@ class _AddBooksPageState extends State<AddBooksPage> {
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
               value: _selectedCategory,
-              items: _categories.map((category) {
-                return DropdownMenuItem<String>(
-                  value: category,
-                  child: Text(category),
-                );
-              }).toList(),
               onChanged: (value) {
                 setState(() {
                   _selectedCategory = value;
-                  _updateBookNo(); // Update book number when category changes
+                  _updateBookNo();
                 });
               },
               decoration: InputDecoration(
-                labelText: 'Select Category',
+                labelText: 'Category',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: Colors.black),
                 ),
                 contentPadding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
+              items: _categories
+                  .map((category) =>
+                      DropdownMenuItem(value: category, child: Text(category)))
+                  .toList(),
             ),
-
             const SizedBox(height: 16),
             TextFormField(
               controller: _bookNoController,
+              onChanged: (_) => _updateBookNo(),
               decoration: InputDecoration(
-                labelText: 'Book Number',
+                labelText: 'Book No',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: Colors.black),
                 ),
                 contentPadding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
             ),
-
             const SizedBox(height: 16),
-            // Image Picker Buttons
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton(
-                  onPressed: () => _pickImage(ImageSource.gallery),
-                  child: const Text('Pick from Gallery'),
-                ),
-                ElevatedButton(
-                  onPressed: () => _pickImage(ImageSource.camera),
-                  child: const Text('Pick from Camera'),
-                ),
-              ],
+            const Text(
+              "Upload Book Cover Photo",
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
             ),
+            const SizedBox(height: 10),
+            _buildImagePicker('Select Main Image', _selectedImage,
+                (file) => setState(() => _selectedImage = file)),
             const SizedBox(height: 16),
-            _selectedImage != null
-                ? Image.file(
-                    _selectedImage!,
-                    height: 150,
-                  )
-                : const Text('No image selected.'),
+            const Text(
+              "Upload Book Index Photos",
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 10),
+            _buildImagePicker('Select Index Image 1', _index1Image,
+                (file) => setState(() => _index1Image = file)),
             const SizedBox(height: 16),
-            _uploadProgress != null
-                ? LinearProgressIndicator(value: _uploadProgress)
-                : Container(),
+            _buildImagePicker('Select Index Image 2', _index2Image,
+                (file) => setState(() => _index2Image = file)),
             const SizedBox(height: 16),
+            _buildImagePicker('Select Index Image 3', _index3Image,
+                (file) => setState(() => _index3Image = file)),
+            const SizedBox(height: 16),
+            _buildImagePicker('Select Index Image 4', _index4Image,
+                (file) => setState(() => _index4Image = file)),
+            const SizedBox(height: 16),
+            if (_uploadProgress != null)
+              LinearProgressIndicator(value: _uploadProgress),
             ElevatedButton(
-              onPressed: _uploadProgress != null && _uploadProgress! < 1
-                  ? null // Disable button during upload
-                  : _saveBookData,
-              style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.white,
-                backgroundColor: Colors.blue.shade400,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              ),
-              child: Text(
-                _uploadProgress != null && _uploadProgress! < 1
-                    ? 'Uploading ${(_uploadProgress! * 100).toStringAsFixed(0)}%'
-                    : 'Save & Submit',
-              ),
+              onPressed: _saveBookData,
+              child: const Text('Add Book'),
             ),
           ],
         ),
