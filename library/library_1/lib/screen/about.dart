@@ -68,7 +68,8 @@ class AboutUsScreen extends StatelessWidget {
                   decoration: const BoxDecoration(
                     image: DecorationImage(
                       image: AssetImage(
-                          'assets/logo1.png'), // Use your image path here
+                        'assets/logo1.png',
+                      ), // Use your image path here
                       fit: BoxFit.cover,
                     ),
                   ),
