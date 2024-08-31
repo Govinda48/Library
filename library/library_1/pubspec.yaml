@@ -46,5 +46,4 @@ flutter:
   assets:
     -  assets/
     -  assets/images/
-    -  assets/video/login.mp4
-    -  assets/video/signin.mp4
+  

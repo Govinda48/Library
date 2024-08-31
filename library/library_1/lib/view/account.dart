@@ -39,8 +39,17 @@ class CategoryWiseBookCountPage extends StatelessWidget {
                   child: Center(
                     child: PieChart(
                       PieChartData(
-                        sectionsSpace: 2,
-                        centerSpaceRadius: 40,
+                        borderData: FlBorderData(
+                          show: true,
+                          border: Border.all(
+                            strokeAlign: 4,
+                            color: Colors.black,
+                          ),
+                        ),
+                        // centerSpaceColor: Colors.grey,
+                        sectionsSpace: 0.5,
+                        // centerSpaceRadius: 50,
+                        startDegreeOffset: 5,
                         sections: _buildPieChartSections(categoryCounts),
                       ),
                     ),
