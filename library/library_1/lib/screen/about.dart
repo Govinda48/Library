@@ -116,19 +116,20 @@ class AboutUsScreen extends StatelessWidget {
                 width: double.infinity,
                 height: 3000,
                 child: Center(
-                    child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Civil: This category deals with non-criminal disputes, including property disputes, contracts, family law, and other civil matters. It encompasses the laws that regulate rights and obligations of individuals and organizations. \n\nCriminal: This category is related to laws that define criminal offenses and the legal procedures for addressing criminal behavior. It includes various crimes like theft, assault, fraud, and other offenses against society and individuals. \n\nFamily: This category covers laws related to family matters such as marriage, divorce, child custody, adoption, and inheritance. It is foc used on maintaining and regulating family relationships and resolving disputes within them. \n\nProperty: This category involves laws that govern the ownership and use of property, including real estate transactions, leases, and property disputes. It covers both movable and immovable property rights. \n\nNI Act (Negotiable Instruments Act): This category deals with laws regarding negotiable instruments like cheques, promissory notes, bills of exchange, etc. It is primarily focused on the legal framework for the functioning of these instruments and resolving disputes related to them. \n\nConstitution: This category involves the interpretation and application of the Constitution of the country. It covers fundamental rights, duties, government structure, and the legal framework that defines the relationship between the state and its citizens. \n\nJMFC (Judicial Magistrate First Class): This category is related to the JMFC exams and the legal procedures and knowledge required for candidates appearing for judicial exams. It covers subjects and topics relevant to judicial services. \n\nStudent: This category focuses on legal education for students, including study materials, notes, case laws, and guidelines to help law students understand and excel in their studies. \n\nBare Act: This category contains the verbatim text of the legal acts passed by the legislature. It provides the exact wording of the law as it is officially published, without any interpretation or commentary. \n\nOther: This category encompasses other miscellaneous legal topics that do not fit into the above categories. It could include emerging legal issues, niche areas of law, or specialized topics.',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 20,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Civil: This category deals with non-criminal disputes, including property disputes, contracts, family law, and other civil matters. It encompasses the laws that regulate rights and obligations of individuals and organizations. \n\nCriminal: This category is related to laws that define criminal offenses and the legal procedures for addressing criminal behavior. It includes various crimes like theft, assault, fraud, and other offenses against society and individuals. \n\nFamily: This category covers laws related to family matters such as marriage, divorce, child custody, adoption, and inheritance. It is foc used on maintaining and regulating family relationships and resolving disputes within them. \n\nProperty: This category involves laws that govern the ownership and use of property, including real estate transactions, leases, and property disputes. It covers both movable and immovable property rights. \n\nNI Act (Negotiable Instruments Act): This category deals with laws regarding negotiable instruments like cheques, promissory notes, bills of exchange, etc. It is primarily focused on the legal framework for the functioning of these instruments and resolving disputes related to them. \n\nConstitution: This category involves the interpretation and application of the Constitution of the country. It covers fundamental rights, duties, government structure, and the legal framework that defines the relationship between the state and its citizens. \n\nJMFC (Judicial Magistrate First Class): This category is related to the JMFC exams and the legal procedures and knowledge required for candidates appearing for judicial exams. It covers subjects and topics relevant to judicial services. \n\nStudent: This category focuses on legal education for students, including study materials, notes, case laws, and guidelines to help law students understand and excel in their studies. \n\nBare Act: This category contains the verbatim text of the legal acts passed by the legislature. It provides the exact wording of the law as it is officially published, without any interpretation or commentary. \n\nOther: This category encompasses other miscellaneous legal topics that do not fit into the above categories. It could include emerging legal issues, niche areas of law, or specialized topics.',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 20,
+                        ),
                       ),
-                    ),
-                  ],
-                )),
+                    ],
+                  ),
+                ),
               ),
             ),
           ],
